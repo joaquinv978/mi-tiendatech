@@ -1,20 +1,35 @@
 services:
+  database:
+    image: mysql:8.0
+    container_name: tienda-tech-db
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: tiendatech
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./tienda-tech-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build: ./tienda-tech-backend
+    container_name: tienda-tech-backend
+    ports:
+      - "3001:3001"
+    environment:
+      DB_HOST: database
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: tiendatech
+      DB_PORT: "3306"
+    depends_on:
+      - database
+
   frontend:
-    image: TU_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/tienda-tech-frontend:latest
+    build: ./tienda-tech-frontend
     container_name: tienda-tech-frontend
     ports:
       - "80:80"
     depends_on:
       - backend
-
-  backend:
-    image: TU_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/tienda-tech-backend:latest
-    container_name: tienda-tech-backend
-    environment:
-      DB_HOST: "${DB_HOST}"
-      DB_USER: "${DB_USER}"
-      DB_PASSWORD: "${DB_PASSWORD}"
-      DB_NAME: "${DB_NAME}"
-      DB_PORT: "3306"
-    ports:
-      - "3001:3001"
+      
